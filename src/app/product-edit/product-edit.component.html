@@ -1,0 +1,45 @@
+<button (click)="goBack()" class="btn btn-primary btn-back"> Go Back </button>  
+<form #editProductFrom="ngForm" (ngSubmit)="saveProduct(editProductFrom.form);">
+
+  <div *ngIf="model; then main else loading" disable="true"></div>
+
+  <ng-template #main>
+    <div class="form-group">
+      <label for="name-input">Product Name</label>
+      <input type="text" class="form-control" name="product-name" id="name-input"
+        [(ngModel)]="model.name" #nameField="ngModel" required minlength="2">
+
+      <div *ngIf="nameField.touched && nameField.errors">
+        <div class="alert alert-danger" *ngIf="nameField.errors.required">
+          Name is required
+        </div>
+        <div class="alert alert-danger" *ngIf="nameField.errors.minlength">
+        The product name should be at least 
+          {{nameField.errors.minlength.requiredLength}} characters long
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">    
+      <label for="price-input">Price</label>
+      <input type="number" class="form-control" name="product-price" id="price-input"
+        [(ngModel)]="model.price" #priceField="ngModel" required min='1' step='1' appDigitOnly>
+
+      <div *ngIf="priceField.touched && priceField.errors">
+        <div class="alert alert-danger" *ngIf="priceField.errors.required">
+          Price is required
+        </div>    
+      </div>  
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" [disabled]="!editProductFrom.valid">Save</button>
+      <button class="btn btn-primary" (click)="deleteProduct()">Delete</button> 
+    </div>
+  </ng-template>
+
+  <ng-template #loading class="loading"> 
+    Loading...
+  </ng-template>
+</form>
+

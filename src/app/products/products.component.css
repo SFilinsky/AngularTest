@@ -1,0 +1,21 @@
+.nav {
+      position: relative;
+      display: flex;
+      align-content: center;
+      justify-content: flex-start;
+      left: 5px;
+      width: 20em;
+}
+
+.nav div {
+      margin: 10px;
+}
+
+.content-pad {
+      position: relative;
+      background-color: #eeeeee;
+      border-radius: 3px;
+      padding: 20px;
+      width: 18em;
+      left: 15px;
+}

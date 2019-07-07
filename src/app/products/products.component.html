@@ -1,0 +1,18 @@
+<div class="nav">
+  <div routerLink="/addProduct" class="btn btn-primary">Add New Product</div>
+</div>
+
+<div class="content-pad">
+  <div *ngIf="products; else loading"> 
+    <h3> Products list </h3>
+    <div *ngFor="let product of products" class="product-list">
+      <div routerLink="/products/{{product.id}}" class="product">      
+        <div class="name"> Name : {{product.name}} </div>
+        <div class="price"> Price : {{product.price}} </div>
+      </div>        
+    </div> 
+  </div>
+  <ng-template #loading class="loading"> 
+      Loading...
+  </ng-template>
+</div>
