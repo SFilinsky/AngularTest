@@ -3,6 +3,7 @@ import { Directive, HostListener, ElementRef } from '@angular/core';
 @Directive({
   selector: '[appDigitOnly]'
 })
+/* Directive to filter input in numberic fields */
 export class DigitOnlyDirective {
   private navigationKeys = [
     'Backspace',

@@ -34,12 +34,15 @@ export class ProductEditComponent implements OnInit {
       );    
   }
 
+  /* Gets current product */
   getProduct(product: Product) {
     if (product == null) this.goMain();
     this.model = product;
     this.buttonLock = false;  
   }
   
+  
+  /* Subscribes form */
   saveProduct(form: NgForm) {    
     if (form.valid && this.buttonLock == false)
     {
@@ -51,6 +54,7 @@ export class ProductEditComponent implements OnInit {
     }
   }
 
+  /* Deletes current product */
   deleteProduct() {
     if (this.buttonLock == false) 
     {
@@ -62,10 +66,14 @@ export class ProductEditComponent implements OnInit {
     }
   }
 
+  
+  /* Goes to previous page */
   goBack() {
     this.location.back();
   }
 
+  
+  /* Goes to starting page */
   goMain() {
     this.router.navigateByUrl("");
   }

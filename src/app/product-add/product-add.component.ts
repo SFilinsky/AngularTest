@@ -22,12 +22,14 @@ export class ProductAddComponent implements OnInit {
   ngOnInit() {
   }
 
+  /* Subscribes form */
   createProduct(form: NgForm): void {
     if (form.valid)
       this.productService.createProduct(this.model)
         .subscribe(() => this.goBack());
   }
 
+  /* Goes to previous page */
   goBack(): void {
     this.location.back();
   }

@@ -20,6 +20,9 @@ export class ProductService {
     private http: HttpClient
   ) { }  
 
+  /* Gets products from server and saves localy
+   * @return List of all products
+   */
   getProducts(): Observable<Product[]> {  
     if (this.products != null) {
       return of(this.products as Product[]);
@@ -31,10 +34,11 @@ export class ProductService {
         tap( _ => this.log(`Fetched products`)),
         catchError(this.handleError<any>(`getProducts`))
       ); 
-    response.subscribe(products => this.saveProducts(products));
+    response.subscribe(products => this.setProducts(products));
     return response;
   }
 
+  /* Gets product from server or local copy */
   getProduct(id: number): Observable<Product> {
     if (this.products != null) {
       var product = this.products.find(x => x.id === id);
@@ -52,6 +56,7 @@ export class ProductService {
     
   }
 
+  /* Sends create reques to server and creates object localy */
   createProduct(product: Product): Observable<number> {
     const url = `${this.productsUrl}`;
     var f = false;
@@ -69,6 +74,7 @@ export class ProductService {
     return response;
   }
 
+  /* Sends update request to server and updates object localy */
   updateProduct(product: Product): Observable<any> {
     const url = `${this.productsUrl}`;
     var response: Observable<any> = this.http.patch(url, product)
@@ -88,6 +94,7 @@ export class ProductService {
     return response;
   }
 
+  /* Sends delete request to server and deletes object localy */
   deleteProduct(id: number): Observable<any> {
     const url = `${this.productsUrl}/${id}`;
     var response: Observable<any> = this.http.delete(url)
@@ -101,7 +108,12 @@ export class ProductService {
     return response;
   }  
 
-  private handleError<T> (operation = 'operation', result?: T) {
+  /* Handles error and returns save object 
+   * @param operation - Operation description
+   * @param result - Save object to return
+   * @returns Save object for failed operation
+   */
+  private handleError<T> (operation: String = 'operation', result?: T) {
     return (error: any): Observable<T> => {
       console.error(error);
       this.log(`${operation} failed: ${error.message}`);  
@@ -109,10 +121,12 @@ export class ProductService {
     }    
   }
 
-  private saveProducts(products: Product[]) {
+  /* Sets products */
+  private setProducts(products: Product[]) {
     this.products = products;
   }
 
+  /* Logs message */
   private log(message: string) {
     //Any logging to be implemented here
     //console.log(message);

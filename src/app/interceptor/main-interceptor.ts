@@ -8,18 +8,21 @@ import { Product } from '../classes/product';
 const storageKey: string = 'products';
 let productList = JSON.parse(localStorage.getItem(storageKey)) || [];
 
+/* Interceptor to imitate backend */
 @Injectable()
 export class MainInterceptor implements HttpInterceptor {
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         const {url, method, headers, body } = req;  
-        //console.log(`Current vault state: ${JSON.stringify(productList)}`);      
+        
+        //Mocking
         return of(null)
             .pipe(mergeMap(handleRoute))
-            .pipe(materialize()) // call materialize and dematerialize to ensure delay even if an error is thrown (https://github.com/Reactive-Extensions/RxJS/issues/648)
+            .pipe(materialize())
             .pipe(delay(100))
             .pipe(dematerialize());
 
+        //Filters Requests
         function handleRoute() {
             switch (true) {
                 case url.endsWith('/products/') && method === 'POST':
@@ -38,8 +41,10 @@ export class MainInterceptor implements HttpInterceptor {
             }
         }
         
-        //route functions
 
+        //Route functions
+
+        /* Creates new product */
         function createProduct() {
             const product: Product = body;
             product.id = productList.length ?
@@ -49,14 +54,18 @@ export class MainInterceptor implements HttpInterceptor {
             return ok(product.id);
         }
 
+        /* Returns list of products */
         function getProducts() {
             return ok(productList);
         }
 
+        
+        /* Returns product by id */
         function getProductById() {
             return ok(productList.find(x => x.id === idFromUrl()));
         }
 
+        /* Updates product */
         function updateProduct() {                    
             const product = body;
             if (productList.findIndex(x => x.id == product.id) == null)
@@ -75,6 +84,7 @@ export class MainInterceptor implements HttpInterceptor {
             return ok();
         }
 
+        /* Deletes product */
         function deleteProduct() {
             productList = productList.filter(x => x.id !== idFromUrl());
             localStorage.setItem(storageKey, JSON.stringify(productList));
@@ -82,15 +92,19 @@ export class MainInterceptor implements HttpInterceptor {
         }
 
 
-        //addiional functions
+        //Additional functions
+        
+        /* Throws status 200 (with an object) to client */
         function ok(body?) {
             return of(new HttpResponse({ status: 200, body }))
         }
 
+        /* Throws error to client */
         function error(message) {
             return throwError({ error: { message } });
         }
 
+        /* Gets id from url */
         function idFromUrl() {
             const urlParts = url.split('/');
             return parseInt(urlParts[urlParts.length - 1]);

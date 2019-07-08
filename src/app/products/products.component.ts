@@ -20,11 +20,11 @@ export class ProductsComponent implements OnInit {
     this.products = null;
     this.productService.getProducts()
       .subscribe(
-        products => this.saveProducts(products)
+        products => this.setProducts(products)
       );    
   }
 
-  saveProducts(products: Product[]) : void {
+  setProducts(products: Product[]) : void {
     this.products = products;
   }
 

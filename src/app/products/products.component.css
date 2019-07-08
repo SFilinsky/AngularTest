@@ -15,7 +15,14 @@
       position: relative;
       background-color: #eeeeee;
       border-radius: 3px;
+      width: fit-content;
       padding: 20px;
-      width: 18em;
       left: 15px;
+}
+
+.product {
+      background-color: #dddddd;  
+      margin: 5px;
+      padding: 5px;      
+      border-radius: 3px;
 }
