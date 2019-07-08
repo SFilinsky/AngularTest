@@ -16,9 +16,7 @@ export class ProductService {
   private productsUrl: string = 'http://localhost:4200/products/';
   private products: Product[];
 
-  constructor(
-    private http: HttpClient
-  ) { }  
+  constructor(private http: HttpClient) {}
 
   /* Gets products from server and saves localy
    * @return List of all products
@@ -27,7 +25,6 @@ export class ProductService {
     if (this.products != null) {
       return of(this.products as Product[]);
     }
-
     const url = `${this.productsUrl}`;
     var response: Observable<Product[]> = this.http.get<Product[]>(url)
       .pipe(
@@ -59,15 +56,12 @@ export class ProductService {
   /* Sends create reques to server and creates object localy */
   createProduct(product: Product): Observable<number> {
     const url = `${this.productsUrl}`;
-    var f = false;
     this.products.push(product);  
     var response: Observable<number> = this.http.post<number>(url, product)
       .pipe(
         tap( _ => {
           this.log(`Created new product ${product.name} with price of ${product.price}`);
           product.id = _;
-          //f (f == false) this.products.push(product);  
-          f = true;     
         }),
         catchError(this.handleError<any>(`createProduct`))
       );        

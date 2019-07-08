@@ -6,7 +6,8 @@ import { Product } from '../classes/product';
 
 
 const storageKey: string = 'products';
-let productList = JSON.parse(localStorage.getItem(storageKey)) || [];
+let productList: Product[] = JSON.parse(localStorage.getItem(storageKey)) || [];
+
 
 /* Interceptor to imitate backend */
 @Injectable()
@@ -14,7 +15,7 @@ export class MainInterceptor implements HttpInterceptor {
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         const {url, method, headers, body } = req;  
-        
+
         //Mocking
         return of(null)
             .pipe(mergeMap(handleRoute))
@@ -23,7 +24,7 @@ export class MainInterceptor implements HttpInterceptor {
             .pipe(dematerialize());
 
         //Filters Requests
-        function handleRoute() {
+        function handleRoute() {            
             switch (true) {
                 case url.endsWith('/products/') && method === 'POST':
                     return createProduct();
@@ -45,11 +46,11 @@ export class MainInterceptor implements HttpInterceptor {
         //Route functions
 
         /* Creates new product */
-        function createProduct() {
+        function createProduct() {  
             const product: Product = body;
             product.id = productList.length ?
-                Math.max(...productList.map(x => (x.id != null) ? x.id : 0 )) + 1 : 1;
-            //productList.push(product);            
+                Math.max(...productList.map(x => (x.id != null) ? x.id : 0 )) + 1 : 1;            
+            productList.push(product);          
             localStorage.setItem(storageKey, JSON.stringify(productList));
             return ok(product.id);
         }
@@ -72,7 +73,6 @@ export class MainInterceptor implements HttpInterceptor {
                 return error('Wrong product index');
 
             productList.forEach(el => {
-                console.log(JSON.stringify(el));
                 if (el.id == product.id) 
                 {
                     el.name = product.name;

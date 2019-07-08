@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { Product } from '../classes/product';
 import { ProductService } from '../services/product.service';
+import { Observable, from } from 'rxjs';
 
 @Component({
   selector: 'app-products',
@@ -11,6 +12,7 @@ import { ProductService } from '../services/product.service';
 export class ProductsComponent implements OnInit {
 
   products: Product[];
+  dataSource: Observable<Product>; 
 
   constructor(
     private productService: ProductService
@@ -25,7 +27,9 @@ export class ProductsComponent implements OnInit {
   }
 
   setProducts(products: Product[]) : void {
-    this.products = products;
+    this.products = products.filter(function(elem, index, self) {
+      return index === self.indexOf(elem);
+    });
   }
 
 }
