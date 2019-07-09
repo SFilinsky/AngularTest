@@ -25,11 +25,13 @@ export class ProductsComponent implements OnInit {
         products => this.setProducts(products)
       );    
   }
-
+  
   setProducts(products: Product[]) : void {
+    console.log(JSON.stringify(products));
     this.products = products.filter(function(elem, index, self) {
-      return index === self.indexOf(elem);
+      return (self.filter( x => (x.id === elem.id) && (self.indexOf(x) < index)).length === 0);
     });
+    console.log(JSON.stringify(this.products));
   }
 
 }
