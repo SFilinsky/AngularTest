@@ -3,14 +3,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { NgForm } from '@angular/forms';
 
-import { Product } from '../classes/product';
-import { ProductService } from '../services/product.service';
-import { DigitOnlyDirective } from '../digit-only.directive';
+import { Product } from '../../model/product';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-product-edit',
   templateUrl: './product-edit.component.html',
-  styleUrls: ['./product-edit.component.css', '../global-styles/forms-style.css']
+  styleUrls: ['./product-edit.component.css', '../../../../global-styles/forms-style.css']
 })
 export class ProductEditComponent implements OnInit {
 
@@ -27,10 +26,16 @@ export class ProductEditComponent implements OnInit {
 
   ngOnInit() {
     const id = +this.route.snapshot.paramMap.get('id');
-    this.productService.getProduct(id)
+    var sub = this.productService.getProduct(id)
       .subscribe(
-        product => this.getProduct(product),
-        err => this.goMain()
+        product => {
+          this.getProduct(product);
+          sub.unsubscribe();
+        },
+        err => {
+          this.goMain();
+          sub.unsubscribe();
+        }
       );    
   }
 
@@ -47,10 +52,11 @@ export class ProductEditComponent implements OnInit {
     if (form.valid && this.buttonLock == false)
     {
       this.buttonLock = true;
-      this.productService.updateProduct(this.model)
-        .subscribe(
-          () => this.goBack()
-        );
+      var sub = this.productService.updateProduct(this.model)
+        .subscribe(() => { 
+          this.goBack();
+          sub.unsubscribe();
+        });
     }
   }
 
@@ -59,10 +65,11 @@ export class ProductEditComponent implements OnInit {
     if (this.buttonLock == false) 
     {
       this.buttonLock = true;
-      this.productService.deleteProduct(this.model.id)
-        .subscribe(
-          () => this.goBack()          
-        );
+      var sub = this.productService.deleteProduct(this.model.id)
+        .subscribe(() => {
+          this.goBack();            
+          sub.unsubscribe();       
+        });
     }
   }
 

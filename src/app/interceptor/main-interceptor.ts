@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpResponse} from '@angular/common/http';
 import { delay, mergeMap, materialize, dematerialize, findIndex } from 'rxjs/operators';
-import { Product } from '../classes/product';
+import { Product } from '../product/model/product';
 
 
 const storageKey: string = 'products';
@@ -50,7 +50,7 @@ export class MainInterceptor implements HttpInterceptor {
             const product: Product = body;
             product.id = productList.length ?
                 Math.max(...productList.map(x => (x.id != null) ? x.id : 0 )) + 1 : 1;            
-            productList.push(product);          
+            productList = [...productList, product];     
             localStorage.setItem(storageKey, JSON.stringify(productList));
             return ok(product.id);
         }
@@ -69,16 +69,7 @@ export class MainInterceptor implements HttpInterceptor {
         /* Updates product */
         function updateProduct() {                    
             const product = body;
-            if (productList.findIndex(x => x.id == product.id) == null)
-                return error('Wrong product index');
-
-            productList.forEach(el => {
-                if (el.id == product.id) 
-                {
-                    el.name = product.name;
-                    el.price = product.price;
-                }
-            });
+            productList.map(el => (el.id == product.id) ? product : el);
  
             localStorage.setItem(storageKey, JSON.stringify(productList));
             return ok();

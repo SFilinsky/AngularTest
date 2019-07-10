@@ -1,8 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, from} from 'rxjs';
+import { Store, select } from '@ngrx/store';
+import { Observable, of, from, Subscription} from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { Product } from '../classes/product';
+
+import { ProductModule } from '../product.module';
+
+import { Product } from '../model/product';
+import * as ProductActions from "../store/products.actions";
+
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json'})
@@ -15,24 +21,42 @@ export class ProductService {
 
   private productsUrl: string = 'http://localhost:4200/products/';
   private products: Product[];
+  private products$: Observable<Product[]>;
+  private sub: Subscription;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private store: Store<any>
+  ) {
+    this.products$ = this.store.select('products');
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
 
   /* Gets products from server and saves localy
    * @return List of all products
    */
-  getProducts(): Observable<Product[]> {  
+  getProducts(): Observable<Product[]> {      
+    var response: Observable<Product[]>;    
     if (this.products != null) {
-      return of(this.products as Product[]);
-    }
+      response = of(this.products);
+      return response;
+    }           
     const url = `${this.productsUrl}`;
-    var response: Observable<Product[]> = this.http.get<Product[]>(url)
+    response = this.http.get<Product[]>(url)
       .pipe(
         tap( _ => this.log(`Fetched products`)),
         catchError(this.handleError<any>(`getProducts`))
       ); 
-    response.subscribe(products => this.setProducts(products));
-    return response;
+    var sub = response.subscribe(
+      products => {        
+        this.setProducts(products);
+        sub.unsubscribe();       
+      }
+    );  
+    return response;  
   }
 
   /* Gets product from server or local copy */
@@ -42,8 +66,7 @@ export class ProductService {
       if (product != null) {
         return of(product as Product);
       }
-    }
-
+  }
     const url = `${this.productsUrl}/${id}`;
     return this.http.get<Product>(url)
       .pipe(
@@ -56,12 +79,12 @@ export class ProductService {
   /* Sends create reques to server and creates object localy */
   createProduct(product: Product): Observable<number> {
     const url = `${this.productsUrl}`;
-    this.products.push(product);  
     var response: Observable<number> = this.http.post<number>(url, product)
       .pipe(
         tap( _ => {
           this.log(`Created new product ${product.name} with price of ${product.price}`);
-          product.id = _;
+          product.id = _;          
+          this.store.dispatch(new ProductActions.CreateProduct(product));  
         }),
         catchError(this.handleError<any>(`createProduct`))
       );        
@@ -75,13 +98,7 @@ export class ProductService {
       .pipe(
         tap( _ => {
           this.log(`Updated product id=${product.id}`);
-          this.products.forEach(el => {
-            if (el.id == product.id) 
-            {
-                el.name = product.name;
-                el.price = product.price;
-            }
-          });
+          this.store.dispatch(new ProductActions.UpdateProduct(product));
         }),
         catchError(this.handleError<any>(`updateProduct id=${product.id}`))
       ); 
@@ -95,7 +112,7 @@ export class ProductService {
       .pipe(
         tap( _ => {
           this.log(`Deleted product id=${id}`);
-          this.products = this.products.filter(x => x.id !== id);
+          this.store.dispatch(new ProductActions.DeleteProduct(id));
         }),
         catchError(this.handleError<any>(`deleteProduct id=${id}`))
       );         
@@ -117,7 +134,9 @@ export class ProductService {
 
   /* Sets products */
   private setProducts(products: Product[]) {
-    this.products = products;
+    this.store.dispatch(new ProductActions.SetProducts(products));
+    this.sub = this.products$.subscribe(item => this.products = item);
+    this.log(`Initilized store: ${JSON.stringify(this.products)}`);
   }
 
   /* Logs message */

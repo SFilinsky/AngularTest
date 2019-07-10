@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
-import {NgForm} from '@angular/forms';
+import { NgForm } from '@angular/forms';
 
-import { Product } from '../classes/product';
-import { ProductService } from '../services/product.service';
+import { Product } from '../../model/product';
+import { ProductService } from '../../services/product.service';
 
 @Component({
   selector: 'app-product-add',
   templateUrl: './product-add.component.html',
-  styleUrls: ['./product-add.component.css', '../global-styles/forms-style.css']
+  styleUrls: ['./product-add.component.css', '../../../../global-styles/forms-style.css']
 })
 export class ProductAddComponent implements OnInit {
 
@@ -25,8 +25,11 @@ export class ProductAddComponent implements OnInit {
   /* Subscribes form */
   createProduct(form: NgForm): void {
     if (form.valid)
-      this.productService.createProduct(this.model)
-        .subscribe(() => this.goBack());
+      var sub = this.productService.createProduct(this.model)
+        .subscribe(() => {
+          this.goBack();
+          sub.unsubscribe();
+        });
   }
 
   /* Goes to previous page */
