@@ -24,7 +24,6 @@ export class ProductsComponent implements OnInit {
       .subscribe(
         products => {
           this.setProducts(products);
-          sub.unsubscribe();
         }
       );    
   }

@@ -28,7 +28,6 @@ export class ProductAddComponent implements OnInit {
       var sub = this.productService.createProduct(this.model)
         .subscribe(() => {
           this.goBack();
-          sub.unsubscribe();
         });
   }
 

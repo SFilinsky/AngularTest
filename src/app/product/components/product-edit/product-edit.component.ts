@@ -30,11 +30,9 @@ export class ProductEditComponent implements OnInit {
       .subscribe(
         product => {
           this.getProduct(product);
-          sub.unsubscribe();
         },
         err => {
           this.goMain();
-          sub.unsubscribe();
         }
       );    
   }

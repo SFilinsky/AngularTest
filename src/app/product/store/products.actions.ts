@@ -1,5 +1,6 @@
 import { Action, props } from '@ngrx/store';
 import { Product } from '../model/product';
+import { Update } from '@ngrx/entity';
 
 //Enumeration of all action names
 export enum ProductActionTypes {
@@ -12,26 +13,24 @@ export enum ProductActionTypes {
 //Action classes for all actions
 export class SetProducts implements Action {
       readonly type = ProductActionTypes.SET_PRODUCTS;
-      constructor(readonly payload: Product[]) { }
+      constructor(readonly payload: { products:  Product[] }) { }
 };
 export class CreateProduct implements Action {
       readonly type = ProductActionTypes.CREATE_PRODUCT;
-      constructor(readonly payload:  Product) { }
+      constructor(readonly payload: { product:  Product }) { }
 };
 export class UpdateProduct implements Action {
       readonly type = ProductActionTypes.UPDATE_PRODUCT;
-      constructor(readonly payload: Product) { }
+      constructor(readonly payload: { product:  Update<Product> }) { }
 };
 export class DeleteProduct implements Action {
       readonly type = ProductActionTypes.DELETE_PRODUCT;
-      constructor(readonly payload: number) { }
-};
-
-//Action to add any payload, does nothing
-class AnyPayloadAdder implements Action {
-      readonly type = null;
-      constructor(readonly payload: any) { }
+      constructor(readonly payload: { id: number }) { }
 };
 
 //Type including all action classes
-export type ProductActions = SetProducts  | CreateProduct | UpdateProduct | DeleteProduct | AnyPayloadAdder;
+export type ProductActions =
+      SetProducts
+      | CreateProduct
+      | UpdateProduct
+      | DeleteProduct;

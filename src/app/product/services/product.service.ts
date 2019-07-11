@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Store, select } from '@ngrx/store';
+import { Store, State, select} from '@ngrx/store';
+import { Update } from '@ngrx/entity'
 import { Observable, of, from, Subscription} from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
@@ -8,6 +9,7 @@ import { ProductModule } from '../product.module';
 
 import { Product } from '../model/product';
 import * as ProductActions from "../store/products.actions";
+import { ProductsState, getProducts } from '../store/meta-reducer';
 
 
 const httpOptions = {
@@ -25,10 +27,10 @@ export class ProductService {
   private sub: Subscription;
 
   constructor(
-    private http: HttpClient,
-    private store: Store<any>
+    private _http: HttpClient,
+    private _store: Store<ProductsState>
   ) {
-    this.products$ = this.store.select('products');
+    this.products$ = _store.pipe(getProducts);
   }
 
   ngOnDestroy() {
@@ -45,15 +47,15 @@ export class ProductService {
       return response;
     }           
     const url = `${this.productsUrl}`;
-    response = this.http.get<Product[]>(url)
+    response = this._http.get<Product[]>(url)
       .pipe(
         tap( _ => this.log(`Fetched products`)),
         catchError(this.handleError<any>(`getProducts`))
       ); 
     var sub = response.subscribe(
       products => {        
-        this.setProducts(products);
-        sub.unsubscribe();       
+        this.setProducts(products);   
+        sub.unsubscribe();              
       }
     );  
     return response;  
@@ -66,9 +68,9 @@ export class ProductService {
       if (product != null) {
         return of(product as Product);
       }
-  }
+    }
     const url = `${this.productsUrl}/${id}`;
-    return this.http.get<Product>(url)
+    return this._http.get<Product>(url)
       .pipe(
         tap( _ => this.log(`Fetched product id=${id}`)),
         catchError(this.handleError<any>(`getProduct`))
@@ -79,12 +81,12 @@ export class ProductService {
   /* Sends create reques to server and creates object localy */
   createProduct(product: Product): Observable<number> {
     const url = `${this.productsUrl}`;
-    var response: Observable<number> = this.http.post<number>(url, product)
+    var response: Observable<number> = this._http.post<number>(url, product)
       .pipe(
         tap( _ => {
           this.log(`Created new product ${product.name} with price of ${product.price}`);
           product.id = _;          
-          this.store.dispatch(new ProductActions.CreateProduct(product));  
+          this._store.dispatch(new ProductActions.CreateProduct({ product }));  
         }),
         catchError(this.handleError<any>(`createProduct`))
       );        
@@ -93,12 +95,19 @@ export class ProductService {
 
   /* Sends update request to server and updates object localy */
   updateProduct(product: Product): Observable<any> {
+    const productUpdate: Update<Product> = {
+      id: product.id,
+      changes: { 
+        name: product.name,
+        price: product.price
+      }
+    };
     const url = `${this.productsUrl}`;
-    var response: Observable<any> = this.http.patch(url, product)
+    var response: Observable<any> = this._http.patch(url, product)
       .pipe(
         tap( _ => {
           this.log(`Updated product id=${product.id}`);
-          this.store.dispatch(new ProductActions.UpdateProduct(product));
+          this._store.dispatch(new ProductActions.UpdateProduct({product: productUpdate}));
         }),
         catchError(this.handleError<any>(`updateProduct id=${product.id}`))
       ); 
@@ -108,11 +117,11 @@ export class ProductService {
   /* Sends delete request to server and deletes object localy */
   deleteProduct(id: number): Observable<any> {
     const url = `${this.productsUrl}/${id}`;
-    var response: Observable<any> = this.http.delete(url)
+    var response: Observable<any> = this._http.delete(url)
       .pipe(
         tap( _ => {
           this.log(`Deleted product id=${id}`);
-          this.store.dispatch(new ProductActions.DeleteProduct(id));
+          this._store.dispatch(new ProductActions.DeleteProduct({ id }));
         }),
         catchError(this.handleError<any>(`deleteProduct id=${id}`))
       );         
@@ -134,7 +143,7 @@ export class ProductService {
 
   /* Sets products */
   private setProducts(products: Product[]) {
-    this.store.dispatch(new ProductActions.SetProducts(products));
+    this._store.dispatch(new ProductActions.SetProducts({ products }));
     this.sub = this.products$.subscribe(item => this.products = item);
     this.log(`Initilized store: ${JSON.stringify(this.products)}`);
   }

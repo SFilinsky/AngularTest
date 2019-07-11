@@ -10,6 +10,7 @@ import { ProductsComponent } from './components/products/products.component';
 import { ProductAddComponent } from './components/product-add/product-add.component';
 import { ProductEditComponent } from './components/product-edit/product-edit.component';
 import { DigitOnlyDirective } from './divectives/digit-only.directive';
+import { metaReducers } from './store/meta-reducer';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,7 @@ import { DigitOnlyDirective } from './divectives/digit-only.directive';
     CommonModule,
     AppRoutingModule,    
     FormsModule,
-    StoreModule.forFeature('products', ProductsStore.reducer)
+    StoreModule.forFeature('products', ProductsStore.reducer, { metaReducers })
   ],
 })
 export class ProductModule { }
