@@ -1,11 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Store, State, select} from '@ngrx/store';
+import { Store} from '@ngrx/store';
 import { Update } from '@ngrx/entity'
-import { Observable, of, from, Subscription} from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-
-import { ProductModule } from '../product.module';
+import { Observable, of, Subject} from 'rxjs';
+import { catchError, tap, takeUntil } from 'rxjs/operators';
 
 import { Product } from '../model/product';
 import * as ProductActions from "../store/products.actions";
@@ -19,12 +17,12 @@ const httpOptions = {
 @Injectable({
   providedIn: 'root'
 })
-export class ProductService {
+export class ProductService implements OnDestroy{
 
   private productsUrl: string = 'http://localhost:4200/products/';
   private products: Product[];
-  private products$: Observable<Product[]>;
-  private sub: Subscription;
+  private products$: Observable<Product[]>;  
+  private ngUnsubscribe = new Subject(); //Handling subscriptions
 
   constructor(
     private _http: HttpClient,
@@ -34,7 +32,8 @@ export class ProductService {
   }
 
   ngOnDestroy() {
-    this.sub.unsubscribe();
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   /* Gets products from server and saves localy
@@ -52,7 +51,7 @@ export class ProductService {
         tap( _ => this.log(`Fetched products`)),
         catchError(this.handleError<any>(`getProducts`))
       ); 
-    var sub = response.subscribe(
+    var sub = response.pipe(takeUntil(this.ngUnsubscribe)).subscribe(
       products => {        
         this.setProducts(products);   
         sub.unsubscribe();              
@@ -144,7 +143,8 @@ export class ProductService {
   /* Sets products */
   private setProducts(products: Product[]) {
     this._store.dispatch(new ProductActions.SetProducts({ products }));
-    this.sub = this.products$.subscribe(item => this.products = item);
+    this.products$.pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(item => this.products = item);
     this.log(`Initilized store: ${JSON.stringify(this.products)}`);
   }
 
